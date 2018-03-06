@@ -119,6 +119,7 @@ Add a require statement to reference the Fuel SDK's functionality:
 -->
 Next, create an instance of the ET_Client class:
 > $params = [ YOUR_PARAMS_HERE ];
+
 > $myclient = new ET_Client(false, true, $params);
 
 Create an instance of the object type we want to work with:
@@ -175,24 +176,27 @@ ET_Get Object
 
 The ET\_Client class takes care of many of the required steps when accessing ExactTarget's API, including retrieving appropriate access tokens, handling token state for managing refresh, and determining the appropriate endpoints for API requests.  In order to leverage the advantages this class provides, use a single instance of this class for an entire session.  Do not instantiate a new ET_Client object for each request made. 
 
-The ET_Client class accepts multiple parameters
+The ET_Client class accepts 3 parameters.
 
 **Refresh WSDL** - If set to true, it will automatically download a local copy of the WSDL whenever an update is found.
-> $myclient = new ET_Client(true);
-
 **Debug** - If set to true, all API requests that the Fuel SDK is making behind the scenes will be logged to PHP's error log.  This option should only be set to true in order to troubleshoot during the development process and should never be used in a production scenario. 
-> $myclient = new ET_Client(true,true);
-
 **Parameters** - Allows for passing authentication information for use with SSO with a JWT or for passing ClientID/ClientSecret if you would prefer to not use the config file option. 
 
 Example passing JWT: 
-> $myclient = new ET_Client(true, array("jwt"=>"JWT Values goes here"));
+> $myclient = new ET_Client(false, true, array("jwt"=>"JWT Values goes here", ... ));
 
 Example passing ClientID/ClientSecret: 
-> $myclient = new ET_Client(true, array("clientid" => "3bjbc3mg4nbk64z5kzczf89n", "clientsecret"=>"ssnGAPvZg6kmm775KPj2Q4Cs"));
+> $myclient = new ET_Client(false, true, array("clientid" => "3bjbc3mg4nbk64z5kzczf89n", "clientsecret"=>"ssnGAPvZg6kmm775KPj2Q4Cs", ...));
+
+_The `$params` examples above are incomplete. Pass the entire array of 
+necessary params when instantiating the ET_Client object._
+
 
 ## Responses ##
-All methods on Fuel SDK objects return a generic object that follows the same structure, regardless of the type of call.  This object contains a common set of properties used to display details about the request.
+All methods on Fuel SDK objects return a generic object that follows 
+the same structure, regardless of the type of call.  This object 
+contains a common set of properties used to display details about 
+the request.
 
 - status: Boolean value that indicates if the call was successful
 - code: HTTP Error Code (will always be 200 for SOAP requests)
@@ -205,9 +209,11 @@ Get Methods also return an addition value to indicate if more information is ava
 
 
 ## Samples ##
-Find more sample files that illustrate using all of the available functions for ExactTarget objects exposed through the API in the objsamples directory. 
+Find more sample files that illustrate using all of the available 
+functions for ExactTarget objects exposed through the API in the 
+objsamples directory. 
 
-Sample List:
+Sample List (DEPRECATED):
 
  - [BounceEvent](https://github.com/ExactTarget/FuelSDK-PHP/blob/master/objsamples/sample-bounceevent.php)
  - [Campaign](https://github.com/ExactTarget/FuelSDK-PHP/blob/master/objsamples/sample-campaign.php)
