@@ -1,9 +1,8 @@
 <?php
-//require __DIR__ . '/../vendor/autoload.php';
 namespace FuelSdk;
 
 use \RobRichards\WsePhp\WSSESoap;
-use \Firebase\JWT;
+use Firebase\JWT\JWT;
 
 use \Datetime;
 use \SoapClient;
@@ -19,7 +18,7 @@ use \Exception;
 /**
 * Defines a Client interface class which manages the authentication process.
 * This is the main client class which performs authentication, obtains auth token, if expired refresh auth token.
-* Settings/Configuration can be passed to this class during construction or set it in config.php file.
+* Settings/Configuration can be passed to this class during construction.
 * Configuration passed as parameter overrides the values from the configuration file.
 * 
 */
@@ -56,105 +55,96 @@ class ET_Client extends SoapClient
 	 */
 	public $proxyPassword;
 
-	private $wsdlLoc, $debugSOAP, $lastHTTPCode, $clientId, 
-			$clientSecret, $appsignature, $endpoint, 
-			$tenantTokens, $tenantKey, $xmlLoc,$baseUrl, $baseAuthUrl;
-	/**
-	 * Initializes a new instance of the ET_Client class.
-	 *
-	 * @param boolean $getWSDL Flag to indicate whether to load WSDL from source. 
-	 * 	If true, WSDL is load from the source and saved in to path set in xmlLoc variable.
-	 * If false, WSDL stored in the path set in xmlLoc is loaded.
-	 * @param boolean $debug Flag to indicate whether debug information needs to be logged. 
-	 * Logging is enabled when the value is set to true and disabled when set to false.
-	 * @param array $params Array of settings as string.</br>
-	 * <b>Following are the possible settings.</b></br>
-	 * <i><b>defaultwsdl</b></i> - WSDL location/path</br>
-	 * <i><b>clientid</b></i> - Client Identifier optained from App Center</br>
-	 * <i><b>clientsecred</b></i> - Client secret associated with clientid</br>
-	 * <i><b>appsignature</b></i> - Application signature optained from App Center</br>
-	 * <i><b>baseUrl</b></i> - ExactTarget SOAP API Url</br>
-	 * <i><b>baseAuthUrl</b></i> - ExactTarget authentication rest api resource url</br>
-	 * <b>If your application behind a proxy server, use the following setting</b></br>
-	 * <i><b>proxyhost</b></i> - proxy server host name or ip address</br>
-	 * <i><b>proxyport</b></i> - proxy server prot number</br>
-	 * <i><b>proxyusername</b></i> - proxy server user name</br>
-	 * <i><b>proxypassword</b></i> - proxy server password</br>
-	 */
-	function __construct($getWSDL = false, $debug = false, $params = null) 
+    /**
+     * @var string The URL to the online wsdl file
+     */
+	private $defaultWsdlLoc = "https://webservice.exacttarget.com/etframework.wsdl";
+
+    /**
+     * @var string The default baseURL
+     */
+	private $defaultBaseUrl = "https://www.exacttargetapis.com";
+
+    /**
+     * @var string The default Auth URL
+     */
+	private $defaultBaseAuthUrl = "https://auth.exacttargetapis.com";
+
+    /**
+     * @var string The soap URL path suffix
+     */
+	private $defaultSoapPathSuffix = "/platform/v1/endpoints/soap";
+
+    private $wsdlLoc, $debugSOAP, $lastHTTPCode, $clientId,
+        $clientSecret, $appsignature, $endpoint,
+        $tenantTokens, $tenantKey, $xmlLoc,$baseUrl, $baseAuthUrl;
+
+    /**
+     * Initializes a new instance of the ET_Client class.
+     *
+     * @param boolean $getWSDL Flag to indicate whether to load WSDL from source.
+     *   If true, WSDL is load from the source and saved in to path set in xmlLoc variable.
+     *   If false, WSDL stored in the path set in xmlLoc is loaded.
+     * @param boolean $debugSoap Flag to indicate whether debug information needs to be logged.
+     *   Logging is enabled when the value is set to true and disabled when set to false.
+     * @param array $params Array of settings as string.</br>
+     * <b>Following are the possible settings.</b></br>
+     * <i><b>defaultwsdl</b></i> - WSDL location/path</br>
+     * <i><b>xmlLoc</b></i> - WSDL XML filename</br>
+     * The defaultwsdl . xmlLoc make the complete path and filename to the wsdl file
+     * <i><b>clientid</b></i> - Client Identifier obtained from App Center</br>
+     * <i><b>clientsecret</b></i> - Client secret associated with clientid</br>
+     * <i><b>appsignature</b></i> - Application signature obtained from App Center</br>
+     * <i><b>baseUrl</b></i> - ExactTarget SOAP API Url</br>
+     * <i><b>baseAuthUrl</b></i> - ExactTarget authentication rest api resource url</br>
+     * <b>If your application behind a proxy server, use the following setting</b></br>
+     * <i><b>proxyhost</b></i> - proxy server host name or ip address</br>
+     * <i><b>proxyport</b></i> - proxy server port number</br>
+     * <i><b>proxyusername</b></i> - proxy server user name</br>
+     * <i><b>proxypassword</b></i> - proxy server password</br>
+     * <i><b>tenantKey</b></i> - The tenantKey to use for JWT requests</br>
+     * <i><b>jwt</b></i> - The tenantKey to use for JWT requests</br>
+     * @throws Exception
+     */
+	function __construct($getWSDL = false, $debugSoap = false, $params = null)
 	{
-		$tenantTokens = array();
-		$config = false;
+	    if (empty($params)) {
+	        throw new Exception ('No params sent to configure ET_Client class');
+        }
 
-		$this->xmlLoc = 'ExactTargetWSDL.xml';
+        if (array_key_exists('xmlLoc', $params)){$this->xmlLoc = $params['xmlLoc'];}
+        if (array_key_exists('defaultwsdl', $params)){$this->wsdlLoc = $params['defaultwsdl'];}
+        else {$this->wsdlLoc = $this->defaultWsdlLoc;}
+        if (array_key_exists('clientid', $params)){$this->clientId = $params['clientid'];}
+        if (array_key_exists('clientsecret', $params)){$this->clientSecret = $params['clientsecret'];}
+        if (array_key_exists('appsignature', $params)){$this->appsignature = $params['appsignature'];}
+        if (array_key_exists('xmlloc', $params)){$this->xmlLoc = $params['xmlloc'];}
+        if (array_key_exists('proxyhost', $params)){$this->proxyHost = $params['proxyhost'];}
+        if (array_key_exists('proxyport', $params)){$this->proxyPort = $params['proxyport'];}
+        if (array_key_exists('proxyusername', $params)) {$this->proxyUserName = $params['proxyusername'];}
+        if (array_key_exists('proxypassword', $params)) {$this->proxyPassword = $params['proxypassword'];}
+        if (array_key_exists('baseUrl', $params)) { $this->baseUrl = $params['baseUrl']; }
+        else { $this->baseUrl = $this->defaultBaseUrl;}
+        if (array_key_exists('baseAuthUrl', $params)) { $this->baseAuthUrl = $params['baseAuthUrl'];}
+        else { $this->baseAuthUrl = $this->defaultBaseAuthUrl;}
+        if (array_key_exists('tenantKey', $params)) { $this->tenantKey = $params['tenantKey']; }
 
-		if (file_exists(realpath("config.php")))
-			$config = include 'config.php';
-
-		if ($config)
-		{
-			$this->wsdlLoc = $config['defaultwsdl'];
-			$this->clientId = $config['clientid'];
-			$this->clientSecret = $config['clientsecret'];
-			$this->appsignature = $config['appsignature'];
-			$this->baseUrl = $config["baseUrl"];
-			$this->baseAuthUrl = $config["baseAuthUrl"];
-			if (array_key_exists('xmlloc', $config)){$this->xmlLoc = $config['xmlloc'];}
-
-			if(array_key_exists('proxyhost', $config)){$this->proxyHost = $config['proxyhost'];}
-			if (array_key_exists('proxyport', $config)){$this->proxyPort = $config['proxyport'];}
-			if (array_key_exists('proxyusername', $config)){$this->proxyUserName = $config['proxyusername'];}
-			if (array_key_exists('proxypassword', $config)){$this->proxyPassword = $config['proxypassword'];}
-		} 
-		if ($params) 
-		{
-			if ($params && array_key_exists('defaultwsdl', $params)){$this->wsdlLoc = $params['defaultwsdl'];}
-			else {$this->wsdlLoc = "https://webservice.exacttarget.com/etframework.wsdl";}
-			if ($params && array_key_exists('clientid', $params)){$this->clientId = $params['clientid'];}
-			if ($params && array_key_exists('clientsecret', $params)){$this->clientSecret = $params['clientsecret'];}
-			if ($params && array_key_exists('appsignature', $params)){$this->appsignature = $params['appsignature'];}
-			if ($params && array_key_exists('xmlloc', $params)){$this->xmlLoc = $params['xmlloc'];}
-
-			if ($params && array_key_exists('proxyhost', $params)){$this->proxyHost = $params['proxyhost'];}
-			if ($params && array_key_exists('proxyport', $params)){$this->proxyPort = $params['proxyport'];}
-			if ($params && array_key_exists('proxyusername', $params)) {$this->proxyUserName = $params['proxyusername'];}
-			if ($params && array_key_exists('proxypassword', $params)) {$this->proxyPassword = $params['proxypassword'];}			
-			if ($params && array_key_exists('baseUrl', $params))
-			{
-				$this->baseUrl = $params['baseUrl'];
-			}
-			else 
-			{
-				$this->baseUrl = "https://www.exacttargetapis.com";
-			}
-			if ($params && array_key_exists('baseAuthUrl', $params))
-			{
-				$this->baseAuthUrl = $params['baseAuthUrl'];
-			}
-			else 
-			{
-				$this->baseAuthUrl = "https://auth.exacttargetapis.com";
-			}
-		}
-
-
-		
-		$this->debugSOAP = $debug;
+		$this->debugSOAP = $debugSoap;
 		
 		if (!property_exists($this,'clientId') || is_null($this->clientId) || !property_exists($this,'clientSecret') || is_null($this->clientSecret)){
-			throw new Exception('clientid or clientsecret is null: Must be provided in config file or passed when instantiating ET_Client');
+			throw new Exception('clientid or clientsecret is null: Must be passed in $params array when instantiating ET_Client');
 		}
 		
 		if ($getWSDL){$this->CreateWSDL($this->wsdlLoc);}
 		
-		if ($params && array_key_exists('jwt', $params)){
+		if (array_key_exists('jwt', $params)){
 			if (!property_exists($this,'appsignature') || is_null($this->appsignature)){
-				throw new Exception('Unable to utilize JWT for SSO without appsignature: Must be provided in config file or passed when instantiating ET_Client');
+				throw new Exception('Unable to utilize JWT for SSO without appsignature: Must be passed in $params array when instantiating ET_Client');
 			}
 			$decodedJWT = JWT::decode($params['jwt'], $this->appsignature);
 			$dv = new DateInterval('PT'.$decodedJWT->request->user->expiresIn.'S');
-			$newexpTime = new DateTime();
-			$this->setAuthToken($this->tenantKey, $decodedJWT->request->user->oauthToken, $newexpTime->add($dv));
+			$newExpTime = new DateTime();
+			$this->setAuthToken($this->tenantKey, $decodedJWT->request->user->oauthToken, $newExpTime->add($dv));
 			$this->setInternalAuthToken($this->tenantKey, $decodedJWT->request->user->internalOauthToken);
 			$this->setRefreshToken($this->tenantKey, $decodedJWT->request->user->refreshToken);
 			$this->packageName = $decodedJWT->request->application->package;
@@ -162,21 +152,20 @@ class ET_Client extends SoapClient
 		$this->refreshToken();
 
 		try {
-			//$url = $this->baseUrl."/platform/v1/endpoints/soap?access_token=".$this->getAuthToken($this->tenantKey);
-			$url = $this->baseUrl."/platform/v1/endpoints/soap";
-			
-			//$endpointResponse = ET_Util::restGet($url, $this);			
-			$endpointResponse = ET_Util::restGet($url, $this, $this->getAuthToken($this->tenantKey));		
-			//echo "endpoint:  \n";
-			//print_r($endpointResponse);
-							
+			$url = $this->baseUrl. $this->defaultSoapPathSuffix;
+			$endpointResponse = ET_Util::restGet($url, $this, $this->getAuthToken($this->tenantKey));
+
+			if ($this->debugSOAP) {
+				$this->outputDebugInfo("endpoint: \n".$endpointResponse, $url);
+			}
+
 			$endpointObject = json_decode($endpointResponse->body);			
 			if ($endpointObject && property_exists($endpointObject,"url")){
 				$this->endpoint = $endpointObject->url;			
 			} else {
 				throw new Exception('Unable to determine stack using /platform/v1/endpoints/:'.$endpointResponse->body);			
 			}
-			} catch (Exception $e) {
+		} catch (Exception $e) {
 			throw new Exception('Unable to determine stack using /platform/v1/endpoints/: '.$e->getMessage());
 		} 		
 
@@ -185,6 +174,7 @@ class ET_Client extends SoapClient
             'exceptions'=>0,
             'connection_timeout'=>120,
         );
+
         if (!empty($this->proxyHost)) {
             $soapOptions['proxy_host'] = $this->proxyHost;
         }
@@ -197,16 +187,19 @@ class ET_Client extends SoapClient
         if (!empty($this->proxyPassword)) {
             $soapOptions['proxy_password'] = $this->proxyPassword;
         }
+
 		parent::__construct($this->xmlLoc, $soapOptions);
 
 		parent::__setLocation($this->endpoint);
 	}
-	/**
-	 * Gets the refresh token using the authentication URL.
-	 *
-	 * @param boolean $forceRefresh Flag to indicate a force refresh of authentication toekn.
-	 * @return void
-	 */	
+
+    /**
+     * Gets the refresh token using the authentication URL.
+     *
+     * @param boolean $forceRefresh Flag to indicate a force refresh of authentication toekn.
+     * @return void
+     * @throws Exception
+     */
 	function refreshToken($forceRefresh = false) 
 	{
 		
@@ -236,8 +229,10 @@ class ET_Client extends SoapClient
 				}
 				$authResponse = ET_Util::restPost($url, json_encode($jsonRequest), $this);
 				$authObject = json_decode($authResponse->body);
-				//echo "auth:  \n";
-				//print_r($authResponse);
+
+				if ($this->debugSOAP) {
+					$this->outputDebugInfo("auth: \n". $authResponse, $url);
+				}
 				
 				if ($authResponse && property_exists($authObject,"accessToken")){		
 					$dv = new DateInterval('PT'.$authObject->expiresIn.'S');
@@ -255,6 +250,7 @@ class ET_Client extends SoapClient
 			throw new Exception('Unable to validate App Keys(ClientID/ClientSecret) provided.: '.$e->getMessage());
 		}
 	}
+
 	/**
 	 * Returns the  HTTP code return by the last SOAP/Rest call
 	 *
@@ -267,10 +263,12 @@ class ET_Client extends SoapClient
 	}
 
     /**
-	* Create the WSDL file at specified location.
-	* @param  string 		location or path of the WSDL file to be created.
-	* @return void
-    */	
+     * Create the WSDL file at specified location.
+     *
+     * @param  string location or path of the WSDL file to be created.
+     * @return void
+     * @throws Exception
+     */
 	function CreateWSDL($wsdlLoc) 
 	{
 		try{
@@ -294,13 +292,14 @@ class ET_Client extends SoapClient
 			throw new Exception('Unable to store local copy of WSDL file:'.$e->getMessage()."\n");
 		}
 	}
-	
-	/**
-	 * Returns last modified date of the URL
-	 *
-	 * @param [type] $remotepath
-	 * @return string Last modified date
-	 */
+
+    /**
+     * Returns last modified date of the URL
+     *
+     * @param [type] $remotepath
+     * @return string Last modified date
+     * @throws Exception
+     */
 	function GetLastModifiedDate($remotepath) 
 	{
 		$curl = curl_init($remotepath);
@@ -328,17 +327,19 @@ class ET_Client extends SoapClient
 		
 		return curl_getinfo($curl, CURLINFO_FILETIME);
 	}
-	/**
-	 * Perfoms an soap request.
-	 *
-	 * @param string $request Soap request xml 
-	 * @param string $location Url as string
-	 * @param string $saction Soap action name
-	 * @param string $version Future use
-	 * @param integer $one_way Future use
-	 * @return string Soap web service request result
-	 */			
-	function __doRequest($request, $location, $saction, $version, $one_way = 0) 
+
+    /**
+     * Perfoms an soap request.
+     *
+     * @param string $request Soap request xml
+     * @param string $location Url as string
+     * @param string $soap_action Soap action name
+     * @param string $version Future use
+     * @param integer $one_way Future use
+     * @return string Soap web service request result
+     * @throws Exception
+     */
+	function __doRequest($request, $location, $soap_action, $version, $one_way = 0)
 	{
 		$doc = new DOMDocument();
 		$doc->loadXML($request);
@@ -353,7 +354,7 @@ class ET_Client extends SoapClient
 			error_log (str_replace($this->getInternalAuthToken($this->tenantKey),"REMOVED",$content));
 		}
 		
-		$headers = array("Content-Type: text/xml","SOAPAction: ".$saction, "User-Agent: ".ET_Util::getSDKVersion());
+		$headers = array("Content-Type: text/xml","SOAPAction: ".$soap_action, "User-Agent: ".ET_Util::getSDKVersion());
 
 		$ch = curl_init();
 		curl_setopt ($ch, CURLOPT_URL, $location);
@@ -380,6 +381,7 @@ class ET_Client extends SoapClient
 
 		return $output;
 	}
+
 	/**
 	 * Add OAuth token to the header of the soap request
 	 *
@@ -412,9 +414,11 @@ class ET_Client extends SoapClient
 	}
 
 	/** 
-	* Get the authentication token.
-	* @return string 
-	*/	
+     * Get the authentication token.
+	 *
+     * @param $tenantKey string
+	 * @return string
+	 */
 	public function getAuthToken($tenantKey = null) 
 	{
 		$tenantKey = $tenantKey == null ? $this->tenantKey : $tenantKey;
@@ -425,13 +429,14 @@ class ET_Client extends SoapClient
 			? $this->tenantTokens[$tenantKey]['authToken']
 			: null;
 	}
-	
-	/** 
-	* Set the authentication token in the tenantTokens array.
-	* @param  string $tenantKey Tenant key for which auth toke to be set
-	* @param  string $authToken Authentication token to be set
-	* @param  string $authTokenExpiration Authentication token expiration value
-	*/
+
+    /**
+     * Set the authentication token in the tenantTokens array.
+     *
+     * @param  string $tenantKey Tenant key for which auth toke to be set
+     * @param  string $authToken Authentication token to be set
+     * @param  string $authTokenExpiration Authentication token expiration value
+     */
 	function setAuthToken($tenantKey, $authToken, $authTokenExpiration) 
 	{
 		if ($this->tenantTokens[$tenantKey] == null) {
@@ -440,12 +445,13 @@ class ET_Client extends SoapClient
 		$this->tenantTokens[$tenantKey]['authToken'] = $authToken;
 		$this->tenantTokens[$tenantKey]['authTokenExpiration'] = $authTokenExpiration;
 	}
-	
-	/** 
-	* Get the Auth Token Expiration.
-	* @param  string $tenantKey Tenant key for which authenication token is returned
-	* @return string Authenticaiton token for the tenant key
-	*/
+
+    /**
+     * Get the Auth Token Expiration.
+     *
+     * @param  string $tenantKey Tenant key for which authenication token is returned
+     * @return string Authenticaiton token for the tenant key
+     */
 	function getAuthTokenExpiration($tenantKey) 
 	{
 		$tenantKey = $tenantKey == null ? $this->tenantKey : $tenantKey;
@@ -457,11 +463,12 @@ class ET_Client extends SoapClient
 			: null;
 	}
 
-	/** 
-	* Get the internal authentication token.
-	* @param  string $tenantKey
-	* @return string Internal authenication token
-	*/
+    /**
+     * Get the internal authentication token.
+     *
+     * @param  string $tenantKey
+     * @return string Internal authenication token
+     */
 	function getInternalAuthToken($tenantKey) 
 	{
 		$tenantKey = $tenantKey == null ? $this->tenantKey : $tenantKey;	
@@ -473,23 +480,25 @@ class ET_Client extends SoapClient
 			: null;
 	}
 
-	/** 
-	* Set the internal auth tokan.
-	* @param  string $tenantKey
-	* @param string $internalAuthToken
-	*/
+    /**
+     * Set the internal auth token.
+     *
+     * @param  string $tenantKey
+     * @param string $internalAuthToken
+     */
 	function setInternalAuthToken($tenantKey, $internalAuthToken) {
 		if ($this->tenantTokens[$tenantKey] == null) {
 			$this->tenantTokens[$tenantKey] = array();
 		}	
 		$this->tenantTokens[$tenantKey]['internalAuthToken'] = $internalAuthToken;
 	}
-	
-	/** 
-	* Set the refresh authentication token.
-	* @param  string $tenantKey Tenant key to which refresh token is set
-	* @param  string $refreshToken Refresh authenication token
-	*/
+
+    /**
+     * Set the refresh authentication token.
+     *
+     * @param  string $tenantKey Tenant key to which refresh token is set
+     * @param  string $refreshToken Refresh authenication token
+     */
 	function setRefreshToken($tenantKey, $refreshToken) 
 	{
 		if ($this->tenantTokens[$tenantKey] == null) {
@@ -513,16 +522,17 @@ class ET_Client extends SoapClient
 		return isset($this->tenantTokens[$tenantKey]['refreshToken']) 
 			? $this->tenantTokens[$tenantKey]['refreshToken']
 			: null;
-	}	
+	}
 
-	/**
-	 * Add subscriber to list.
-	 *
-	 * @param string $emailAddress Email address of the subscriber
-	 * @param array $listIDs Array of list id to which the subscriber is added
-	 * @param string $subscriberKey Newly added subscriber key
-	 * @return mixed post or patch response object. If the subscriber already existing patch response is returned otherwise post response returned.
-	 */
+    /**
+     * Add subscriber to list.
+     *
+     * @param string $emailAddress Email address of the subscriber
+     * @param array $listIDs Array of list id to which the subscriber is added
+     * @param string $subscriberKey Newly added subscriber key
+     * @return mixed post or patch response object. If the subscriber already existing patch response is returned otherwise post response returned.
+     * @throws Exception
+     */
 	function AddSubscriberToList($emailAddress, $listIDs, $subscriberKey = null)
 	{                   
 		$newSub = new ET_Subscriber;
@@ -533,11 +543,10 @@ class ET_Client extends SoapClient
 			$lists[] = array("ID" => $value);
 		}
 
-		//if (is_string($emailAddress)) {
-			$newSub->props = array("EmailAddress" => $emailAddress, "Lists" => $lists);
-			if ($subscriberKey != null ){
-				$newSub->props['SubscriberKey']  = $subscriberKey;
-			}
+        $newSub->props = array("EmailAddress" => $emailAddress, "Lists" => $lists);
+        if ($subscriberKey != null ){
+            $newSub->props['SubscriberKey']  = $subscriberKey;
+        }
 		
         // Try to add the subscriber
         $postResponse = $newSub->post();
@@ -574,12 +583,13 @@ class ET_Client extends SoapClient
 		$response = new ET_Post($this, "Subscriber", $subs, true);
 		return $response;
     }
-	/**
-	 * Create a new data extension based on the definition passed
-	 *
-	 * @param array $dataExtensionDefinitions Data extension definition properties as an array
-	 * @return mixed post response object
-	 */
+
+    /**
+     * Create a new data extension based on the definition passed
+     *
+     * @param array $dataExtensionDefinitions Data extension definition properties as an array
+     * @return mixed post response object
+     */
 	function CreateDataExtensions($dataExtensionDefinitions)
 	{
 		$newDEs = new ET_DataExtension();
@@ -589,12 +599,13 @@ class ET_Client extends SoapClient
 		
 		return $postResponse;
 	}
-	/**
-	 * Starts an send operation for the TriggerredSend records
-	 *
-	 * @param array $arrayOfTriggeredRecords Array of TriggeredSend records
-	 * @return mixed Send reponse object
-	 */
+
+    /**
+     * Starts an send operation for the TriggerredSend records
+     *
+     * @param array $arrayOfTriggeredRecords Array of TriggeredSend records
+     * @return mixed Send reponse object
+     */
 	function SendTriggeredSends($arrayOfTriggeredRecords)
 	{
 		$sendTS = new ET_TriggeredSend();
@@ -603,14 +614,16 @@ class ET_Client extends SoapClient
 		$sendResponse = $sendTS->send();
 		return $sendResponse;
 	}
-	/**
-	 * Create an email send definition, send the email based on the definition and delete the definition.
-	 *
-	 * @param string $emailID Email identifier for which the email is sent
-	 * @param string $listID Send definition list identifier
-	 * @param string $sendClassficationCustomerKey Send classification customer key 
-	 * @return mixed Final delete action result
-	 */
+
+    /**
+     * Create an email send definition, send the email based on the definition and delete the definition.
+     *
+     * @param string $emailID Email identifier for which the email is sent
+     * @param string $listID Send definition list identifier
+     * @param string $sendClassficationCustomerKey Send classification customer key
+     * @return mixed Final delete action result
+     * @throws Exception
+     */
 	function SendEmailToList($emailID, $listID, $sendClassficationCustomerKey) 
 	{
 		$email = new ET_Email_SendDefinition();
@@ -633,14 +646,16 @@ class ET_Client extends SoapClient
 			throw new Exception("Unable to create send definition due to: ".print_r($result,true));
 		}
 	}
-	/**
-	 * Create an email send definition, send the email based on the definition and delete the definition.
-	 *
-	 * @param string $emailID Email identifier for which the email is sent
-	 * @param string $sendableDataExtensionCustomerKey Sendable data extension customer key 
-	 * @param string $sendClassficationCustomerKey Send classification customer key 
-	 * @return mixed Final delete action result
-	 */
+
+    /**
+     * Create an email send definition, send the email based on the definition and delete the definition.
+     *
+     * @param string $emailID Email identifier for which the email is sent
+     * @param string $sendableDataExtensionCustomerKey Sendable data extension customer key
+     * @param string $sendClassficationCustomerKey Send classification customer key
+     * @return mixed Final delete action result
+     * @throws Exception
+     */
 	function SendEmailToDataExtension($emailID, $sendableDataExtensionCustomerKey, $sendClassficationCustomerKey)
 	{
 		$email = new ET_Email_SendDefinition();
@@ -662,13 +677,15 @@ class ET_Client extends SoapClient
 			throw new Exception("Unable to create send definition due to: ".print_r($result,true));
 		} 
 	}
-	/**
-	 * Create an import definition and start the import process
-	 *
-	 * @param string $listId List identifier. Used as the destination object identifier.
-	 * @param string $fileName Name of the file to be imported
-	 * @return mixed Returns the import process result
-	 */
+
+    /**
+     * Create an import definition and start the import process
+     *
+     * @param string $listId List identifier. Used as the destination object identifier.
+     * @param string $fileName Name of the file to be imported
+     * @return mixed Returns the import process result
+     * @throws Exception
+     */
 	function CreateAndStartListImport($listId,$fileName)
 	{
 		$import = new ET_Import();
@@ -690,15 +707,17 @@ class ET_Client extends SoapClient
 		} else {
 			throw new Exception("Unable to create import definition due to: ".print_r($result,true));
 		} 
-	} 
-	/**
-	 * Create an import definition and start the import process
-	 *
-	 * @param string $dataExtensionCustomerKey Data extension customer key. Used as the destination object identifier.
-	 * @param string $fileName Name of the file to be imported
-	 * @param bool $overwrite Flag to indicate to overwrite the uploaded file
-	 * @return mixed Returns the import process result
-	 */
+	}
+
+    /**
+     * Create an import definition and start the import process
+     *
+     * @param string $dataExtensionCustomerKey Data extension customer key. Used as the destination object identifier.
+     * @param string $fileName Name of the file to be imported
+     * @param bool $overwrite Flag to indicate to overwrite the uploaded file
+     * @return mixed Returns the import process result
+     * @throws Exception
+     */
 	function CreateAndStartDataExtensionImport($dataExtensionCustomerKey, $fileName, $overwrite) 
 	{
 		$import = new ET_Import();
@@ -726,12 +745,13 @@ class ET_Client extends SoapClient
 			throw new Exception("Unable to create import definition due to: ".print_r($result,true));
 		}
 	}
-	/**
-	 * Create a profile attribute
-	 *
-	 * @param array $allAttributes Profile attribute properties as an array.
-	 * @return mixed Post operation result
-	 */
+
+    /**
+     * Create a profile attribute
+     *
+     * @param array $allAttributes Profile attribute properties as an array.
+     * @return mixed Post operation result
+     */
 	function CreateProfileAttributes($allAttributes) 
 	{
 		$attrs = new ET_ProfileAttribute();
@@ -739,12 +759,14 @@ class ET_Client extends SoapClient
 		$attrs->props = $allAttributes;
 		return $attrs->post();
 	}
-	/**
-	 * Create one or more content areas
-	 *
-	 * @param array $arrayOfContentAreas Content areas properties as an array
-	 * @return void
-	 */
+
+    /**
+     * Create one or more content areas
+     *
+     * @param array $arrayOfContentAreas Content areas properties as an array
+     * @return null
+     * @throws Exception
+     */
 	function CreateContentAreas($arrayOfContentAreas) 
 	{
 		$postC = new ET_ContentArea();
@@ -753,7 +775,18 @@ class ET_Client extends SoapClient
 		$sendResponse = $postC->post();
 		return $sendResponse;
 	}
-	
-}
 
-?>
+    /**
+     * Print out debug info
+     *
+     * @param $message
+     * @param null $endpoint
+     */
+	public function outputDebugInfo($message, $endpoint = null)
+	{
+		if ( ! empty($endpoint)) {
+            echo "endpoint: ".$endpoint.PHP_EOL;
+		}
+        print_r($message);
+	}
+}

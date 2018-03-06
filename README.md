@@ -83,17 +83,29 @@ The following code is an example of a minimal composer.json file:
 </pre>
 
 ## Getting Started ##
-Edit config.php so you can input the ClientID and ClientSecret values provided when you registered your application. If you are building a HubExchange application for the Interactive Marketing Hub then, you must also provide the Application Signature (appsignature).  Only change the value for the defaultwsdl configuration item if instructed by ExactTarget.
+The requirement to use config.php has been removed. Instead,
+see the updated $params array fields when instantiating the ET_Client.
+If you are building a 
+HubExchange application for the Interactive Marketing Hub then, you 
+must also provide the Application Signature (appsignature).  
+Only change the value for the defaultwsdl configuration item if 
+instructed by ExactTarget.
 
-See the ET_Client section below for details on how to specify these values at the time the ET_Client object is instantiated if you would prefer to store the ClientID and ClientSecret values in a database or other configuration storage mechanism. 
+See the ET_Client section below for details on how to specify these 
+values at the time the ET_Client object is instantiated if you 
+would prefer to store the ClientID and ClientSecret values in a 
+database or other configuration storage mechanism. 
 
-If you have not registered your application or you need to lookup your Application Key or Application Signature values, please go to Salesforce Marketing Cloud App Center.
+If you have not registered your application or you need to lookup 
+your Application Key or Application Signature values, please go 
+to Salesforce Marketing Cloud App Center.
 
 ## Example Request ##
-All ExactTarget objects exposed through the Fuel SDK begin with be prefixed with "ET\_".  Start by working with the ET_List object:  
+All ExactTarget objects exposed through the Fuel SDK begin with be 
+prefixed with "ET\_".  Start by working with the ET_List object:  
 
-Get the config.php.template file (under vendor/salesforce-mc/ using composer), rename it to config.php and update clientId & clientSecret.  
-Most importantly, put it in your project's root directory where composer.json file exists.  
+See the config.php.template example (under vendor/salesforce-mc/ using 
+composer), update to use your clientId & clientSecret.   
 
 Add composer's auto generated autoload.php file, change the path according to your directory structure:
 > require \_\_DIR\_\_ . '/../vendor/autoload.php'; 
@@ -106,7 +118,8 @@ Add a require statement to reference the Fuel SDK's functionality:
 > require('ET_Client.php');
 -->
 Next, create an instance of the ET_Client class:
-> $myclient = new ET_Client();
+> $params = [ YOUR_PARAMS_HERE ];
+> $myclient = new ET_Client(false, true, $params);
 
 Create an instance of the object type we want to work with:
 > $getList = new ET_List();

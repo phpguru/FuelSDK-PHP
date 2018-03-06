@@ -1,5 +1,7 @@
 <?php
-return array(
+use ET_Client;
+
+$params = array(
     'appsignature' => 'none', 
 	'clientid' => 'CCCCCCCCCCCCCCCCCCCCCCC',
 	'clientsecret' => 'CCCCCCCCCCCCCCCCCCCCCCC',
@@ -9,5 +11,7 @@ return array(
     'proxyhost' => 'localhost',
     'proxyport' => '8080',
     'proxyusername' => '',
-    'proxypassword' => '',	
+    'proxypassword' => '',
 );
+
+$ETClient = new ET_Client(false, true, $params);
