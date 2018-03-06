@@ -156,7 +156,7 @@ class ET_Client extends SoapClient
 			$endpointResponse = ET_Util::restGet($url, $this, $this->getAuthToken($this->tenantKey));
 
 			if ($this->debugSOAP) {
-				$this->outputDebugInfo("endpoint: \n".$endpointResponse, $url);
+				$this->outputDebugInfo("endpoint: \n". json_encode($endpointResponse), $url);
 			}
 
 			$endpointObject = json_decode($endpointResponse->body);			
@@ -231,7 +231,7 @@ class ET_Client extends SoapClient
 				$authObject = json_decode($authResponse->body);
 
 				if ($this->debugSOAP) {
-					$this->outputDebugInfo("auth: \n". $authResponse, $url);
+					$this->outputDebugInfo("auth: \n". json_encode($authResponse), $url);
 				}
 				
 				if ($authResponse && property_exists($authObject,"accessToken")){		
