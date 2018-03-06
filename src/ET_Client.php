@@ -77,7 +77,7 @@ class ET_Client extends SoapClient
 
     private $wsdlLoc, $debugSOAP, $lastHTTPCode, $clientId,
         $clientSecret, $appsignature, $endpoint,
-        $tenantTokens, $tenantKey, $xmlLoc,$baseUrl, $baseAuthUrl;
+        $tenantTokens, $tenantKey, $xmlLoc, $baseUrl, $baseAuthUrl;
 
     /**
      * Initializes a new instance of the ET_Client class.
@@ -112,7 +112,7 @@ class ET_Client extends SoapClient
 	        throw new Exception ('No params sent to configure ET_Client class');
         }
 
-        if (array_key_exists('xmlLoc', $params)){$this->xmlLoc = $params['xmlLoc'];}
+        if (array_key_exists('xmlloc', $params)){$this->xmlLoc = $params['xmlloc'];}
         if (array_key_exists('defaultwsdl', $params)){$this->wsdlLoc = $params['defaultwsdl'];}
         else {$this->wsdlLoc = $this->defaultWsdlLoc;}
         if (array_key_exists('clientid', $params)){$this->clientId = $params['clientid'];}
@@ -135,7 +135,13 @@ class ET_Client extends SoapClient
 			throw new Exception('clientid or clientsecret is null: Must be passed in $params array when instantiating ET_Client');
 		}
 		
-		if ($getWSDL){$this->CreateWSDL($this->wsdlLoc);}
+		if ($getWSDL) {
+		    $this->CreateWSDL($this->wsdlLoc);
+		} else {
+		    if ($this->debugSOAP) {
+		        $this->outputDebugInfo("xmlLoc: ". $this->xmlLoc ." wsdlLoc: ". $this->wsdlLoc);
+            }
+        }
 		
 		if (array_key_exists('jwt', $params)){
 			if (!property_exists($this,'appsignature') || is_null($this->appsignature)){
@@ -188,7 +194,7 @@ class ET_Client extends SoapClient
             $soapOptions['proxy_password'] = $this->proxyPassword;
         }
 
-		parent::__construct($this->xmlLoc, $soapOptions);
+		parent::__construct($this->wsdlLoc . $this->xmlLoc, $soapOptions);
 
 		parent::__setLocation($this->endpoint);
 	}
@@ -196,7 +202,7 @@ class ET_Client extends SoapClient
     /**
      * Gets the refresh token using the authentication URL.
      *
-     * @param boolean $forceRefresh Flag to indicate a force refresh of authentication toekn.
+     * @param boolean $forceRefresh Flag to indicate a force refresh of authentication token.
      * @return void
      * @throws Exception
      */
@@ -784,9 +790,11 @@ class ET_Client extends SoapClient
      */
 	public function outputDebugInfo($message, $endpoint = null)
 	{
+	    echo "<pre>\n";
 		if ( ! empty($endpoint)) {
             echo "endpoint: ".$endpoint.PHP_EOL;
 		}
         print_r($message);
+        echo "</pre>\n";
 	}
 }
