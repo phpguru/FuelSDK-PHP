@@ -97,18 +97,18 @@ That's why we highly encourage to get it from composer.
 
 ### Composer
 Add a dependency to composer require 
-salesforce-mc/fuel-sdk-php to the require section of 
+`phpguru/fuel-sdk-php` to the require section of 
 your project's composer.json configuration file, and 
-update your application.
+then run `composer update` to install.
 
-The following code is an example of a minimal composer.json file:
-<pre>
-{
-    "require": {
-        "phpguru/fuel-sdk-php": "dev-master"
+The following code is an example of a minimal `composer.json` file:
+
+    {
+        "require": {
+            "phpguru/fuel-sdk-php": "dev-master"
+        }
     }
-}
-</pre>
+
 
 ## Getting Started ##
 The requirement to use config.php has been removed. Instead,
@@ -135,7 +135,8 @@ See the config.php.template example (under vendor/salesforce-mc/ using
 composer), update to use your clientId & clientSecret.   
 
 Add composer's auto generated autoload.php file, change the path according to your directory structure:
-> require \_\_DIR\_\_ . '/../vendor/autoload.php'; 
+
+    require \_\_DIR\_\_ . '/../vendor/autoload.php'; 
 
 Add use statement to reference the FuelSdk namespace:
 
