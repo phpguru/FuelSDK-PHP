@@ -1,7 +1,7 @@
 FuelSDK-PHP
 ============
 
-Salesforce Marketing Cloud Fuel SDK for PHP
+Forked from Salesforce Marketing Cloud Fuel SDK for PHP
 
 > Salesforce Marketing Cloud Fuel SDK for PHP is free to use but are not official Salesforce Marketing Cloud products and should be considered community projects. This SDK is not officially tested or documented. For help on any Salesforce Marketing Cloud Fuel SDK for PHP, please consult the Salesforce message boards or the issues section of this repository. Salesforce Marketing Cloud support is not available for this SDK.
 
@@ -77,7 +77,7 @@ The following code is an example of a minimal composer.json file:
 <pre>
 {
     "require": {
-        "salesforce-mc/fuel-sdk-php": "1.1.0"
+        "phpguru/fuel-sdk-php": "dev-master"
     }
 }
 </pre>
