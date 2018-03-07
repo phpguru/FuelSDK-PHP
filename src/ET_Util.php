@@ -309,6 +309,47 @@ class ET_Util
     }
 
     /**
+     * Print debugging message to the browser or cli
+     * @param $message mixed string | array | object
+     */
+    public static function printDebugInfo($message)
+    {
+        if (PHP_SAPI == 'cli') {
+            self::printDebugInfoToCli(self::convertArrayOrObjectToJson($message));
+        } else {
+            self::printDebugInfoToBrowser(self::convertArrayOrObjectToJson($message));
+        }
+    }
+
+    /**
+     * Print to CLI - no pre tags
+     * @param $message mixed string | array | object
+     */
+    private static function printDebugInfoToCli($message)
+    {
+        echo $message . PHP_EOL;
+    }
+
+    /**
+     * Print to browser - include pre tags
+     * @param $message mixed string | array | object
+     */
+    private static function printDebugInfoToBrowser($message)
+    {
+        echo "<pre>" .PHP_EOL;
+        echo $message .PHP_EOL;
+        echo "</pre>" .PHP_EOL;
+    }
+
+    private static function convertArrayOrObjectToJson($message)
+    {
+        if (is_array($message) || is_object($message)) {
+            return json_encode($message);
+        }
+        return $message;
+    }
+
+    /**
      * This method will not change until a major release.
      *
      * @api

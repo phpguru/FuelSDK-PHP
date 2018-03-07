@@ -16,7 +16,7 @@ class ET_Post extends ET_Constructor
      * @param    array $props Dictionary type array which may hold e.g. array('id' => '', 'key' => '')
      * @param    bool $upsert If true SaveAction is UpdateAdd, otherwise not. By default false.
      */
-    function __construct($authStub, $objType, $props, $upsert = false)
+    function __construct($authStub, $objType, $props, $upsert = false, $debug = false)
     {
         $authStub->refreshToken();
         $cr = [];
@@ -44,6 +44,10 @@ class ET_Post extends ET_Constructor
             $objects["Options"] = "";
         }
         $cr["CreateRequest"] = $objects;
+        if ($debug) {
+            ET_Util::printDebugInfo('ET_Post::__construct $cr = ');
+            ET_Util::printDebugInfo($cr);
+        }
         $return = $authStub->__soapCall("Create", $cr, null, null, $out_header);
         parent::__construct($return, $authStub->__getLastResponseHTTPCode());
 

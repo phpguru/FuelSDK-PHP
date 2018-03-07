@@ -2,6 +2,7 @@
 
 namespace FuelSdk;
 
+use FuelSdk\ET_Util;
 use \RobRichards\WsePhp\WSSESoap;
 use Firebase\JWT\JWT;
 
@@ -181,7 +182,7 @@ class ET_Client extends SoapClient
             $this->CreateWSDL($this->wsdlLoc);
         } else {
             if ($this->debugSOAP) {
-                $this->outputDebugInfo("xmlLoc: " . $this->xmlLoc . " wsdlLoc: " . $this->wsdlLoc);
+                ET_Util::printDebugInfo("xmlLoc: " . $this->xmlLoc . " wsdlLoc: " . $this->wsdlLoc);
             }
         }
 
@@ -204,7 +205,7 @@ class ET_Client extends SoapClient
             $endpointResponse = ET_Util::restGet($url, $this, $this->getAuthToken($this->tenantKey));
 
             if ($this->debugSOAP) {
-                $this->outputDebugInfo("endpoint: \n" . json_encode($endpointResponse), $url);
+                ET_Util::printDebugInfo("endpoint: \n" . json_encode($endpointResponse), $url);
             }
 
             $endpointObject = json_decode($endpointResponse->body);
