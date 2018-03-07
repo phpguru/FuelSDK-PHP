@@ -77,7 +77,7 @@ class ET_Client extends SoapClient
 
     private $wsdlLoc, $debugSOAP, $lastHTTPCode, $clientId,
         $clientSecret, $appsignature, $endpoint,
-        $tenantTokens, $tenantKey, $xmlLoc, $baseUrl, $baseAuthUrl;
+        $tenantTokens, $tenantKey, $xmlLoc, $baseUrl, $baseAuthUrl, $exceptions;
 
     /**
      * Initializes a new instance of the ET_Client class.
@@ -104,6 +104,7 @@ class ET_Client extends SoapClient
      * <i><b>proxypassword</b></i> - proxy server password</br>
      * <i><b>tenantKey</b></i> - The tenantKey to use for JWT requests</br>
      * <i><b>jwt</b></i> - The tenantKey to use for JWT requests</br>
+     * <i><b>exceptions</b></i> - Whether to enable soap exceptions</br>
      * @throws Exception
      */
 	function __construct($getWSDL = false, $debugSoap = false, $params = null)
@@ -128,6 +129,11 @@ class ET_Client extends SoapClient
         if (array_key_exists('baseAuthUrl', $params)) { $this->baseAuthUrl = $params['baseAuthUrl'];}
         else { $this->baseAuthUrl = $this->defaultBaseAuthUrl;}
         if (array_key_exists('tenantKey', $params)) { $this->tenantKey = $params['tenantKey']; }
+        if (array_key_exists('exceptions', $params)) {
+            $this->exceptions = $params['exceptions'];
+        } else {
+            $this->exceptions = false;
+        }
 
 		$this->debugSOAP = $debugSoap;
 		
@@ -177,7 +183,7 @@ class ET_Client extends SoapClient
 
         $soapOptions = array(
             'trace'=>1,
-            'exceptions'=>0,
+            'exceptions'=>$this->exceptions,
             'connection_timeout'=>120,
         );
 
@@ -210,7 +216,7 @@ class ET_Client extends SoapClient
 	{
 		
 		if (property_exists($this, "sdl") && $this->sdl == 0){
-			parent::__construct($this->xmlLoc, array('trace'=>1, 'exceptions'=>0));	
+			parent::__construct($this->xmlLoc, array('trace'=>1, 'exceptions'=> $this->exceptions));
 		}
 		try {
 			$currentTime = new DateTime();
