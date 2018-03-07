@@ -150,12 +150,14 @@ to Salesforce Marketing Cloud App Center.
 All ExactTarget objects exposed through the Fuel SDK begin with be 
 prefixed with "ET\_".  Start by working with the ET_List object:  
 
-See the config.php.template example (under vendor/salesforce-mc/ using 
-composer), update to use your clientId & clientSecret.   
+See the config.php.template example (under vendor/phpguru/ using 
+composer), then update your $params array to use your clientId and clientSecret.   
 
 Add composer's auto generated autoload.php file, change the path according to your directory structure:
 
     require \_\_DIR\_\_ . '/../vendor/autoload.php'; 
+    
+In Symfony and Laravel, this is taken care of for you automatically.
 
 Add use statement to reference the FuelSdk namespace:
 
