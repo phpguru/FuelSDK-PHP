@@ -1,75 +1,72 @@
 <?php
-// spl_autoload_register( function($class_name) {
-//     include_once 'src/'.$class_name.'.php';
-// });
+
 namespace FuelSdk;
 
 /**
-* ETDataExtension - Represents a data extension within an account.
-*/
+ * ETDataExtension - Represents a data extension within an account.
+ */
 class ET_DataExtension extends ET_CUDSupport
 {
-	/**
-	* @var ET_DataExtension_Column[]      Gets or sets array of DE columns.
-	*/
-	public  $columns;
-
-	/** 
-	* Initializes a new instance of the class.
-	*/
-	function __construct()
-	{
-		$this->obj = "DataExtension";
-	}
+    /**
+     * @var ET_DataExtension_Column[]      Gets or sets array of DE columns.
+     */
+    public $columns;
 
     /**
-	* Post this instance.
-    * @return ET_Post     Object of type ET_Post which contains http status code, response, etc from the POST SOAP service
-    */
-	public function post()
-	{
-		$originalProps = $this->props;
-		if (ET_Util::isAssoc($this->props)){			
-			$this->props["Fields"] = array("Field"=>array());		
-			if (!is_null($this->columns) && is_array($this->columns)){
-				foreach ($this->columns as $column){
-					array_push($this->props['Fields']['Field'], $column);
-				}	
-			}							
-		} else {
-			$newProps = array();
-			foreach ($this->props as $DE) {
-				$newDE = $DE;
-				$newDE["Fields"] = array("Field"=>array());
-				if (!is_null($DE['columns']) && is_array($DE['columns'])){
-					foreach ($DE['columns'] as $column){
-						array_push($newDE['Fields']['Field'], $column);
-					}						
-				}
-				array_push($newProps, $newDE);
-			}
-			$this->props = $newProps;					
-		}
-		
-		$response = parent::post();
-		
-		$this->props = $originalProps;
-		return $response;
-	}
+     * Initializes a new instance of the class.
+     */
+    function __construct()
+    {
+        $this->obj = "DataExtension";
+    }
 
     /**
-	* Patch this instance.
-    * @return ET_Patch     Object of type ET_Patch which contains http status code, response, etc from the PATCH SOAP service
-    */	
-	public function patch()
-	{
-		$this->props["Fields"] = array("Field"=>array());				
-		foreach ($this->columns as $column){
-			array_push($this->props['Fields']['Field'], $column);
-		}	
-		$response = parent::patch();		
-		unset($this->props["Fields"]);		
-		return $response;
-	}
+     * Post this instance.
+     * @return ET_Post     Object of type ET_Post which contains http status code, response, etc from the POST SOAP service
+     */
+    public function post()
+    {
+        $originalProps = $this->props;
+        if (ET_Util::isAssoc($this->props)) {
+            $this->props["Fields"] = ["Field" => []];
+            if (!is_null($this->columns) && is_array($this->columns)) {
+                foreach ($this->columns as $column) {
+                    array_push($this->props['Fields']['Field'], $column);
+                }
+            }
+        } else {
+            $newProps = [];
+            foreach ($this->props as $DE) {
+                $newDE = $DE;
+                $newDE["Fields"] = ["Field" => []];
+                if (!is_null($DE['columns']) && is_array($DE['columns'])) {
+                    foreach ($DE['columns'] as $column) {
+                        array_push($newDE['Fields']['Field'], $column);
+                    }
+                }
+                array_push($newProps, $newDE);
+            }
+            $this->props = $newProps;
+        }
+
+        $response = parent::post();
+
+        $this->props = $originalProps;
+        return $response;
+    }
+
+    /**
+     * Patch this instance.
+     * @return ET_Patch     Object of type ET_Patch which contains http status code, response, etc from the PATCH SOAP service
+     */
+    public function patch()
+    {
+        $this->props["Fields"] = ["Field" => []];
+        foreach ($this->columns as $column) {
+            array_push($this->props['Fields']['Field'], $column);
+        }
+        $response = parent::patch();
+        unset($this->props["Fields"]);
+        return $response;
+    }
 }
-?>
