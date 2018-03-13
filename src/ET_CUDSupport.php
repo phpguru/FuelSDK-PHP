@@ -11,9 +11,14 @@ class ET_CUDSupport extends ET_GetSupport
 {
 
     /**
-     * @return ET_Post     Object of type ET_Post which contains http status code, response, etc from the POST SOAP service
+     * Object of type ET_Post which contains http status code,
+     * response, etc from the POST SOAP service
+     * @param boolean $upsert ? kind of like on duplicate key update
+     * @param boolean $debug whether to spew debugging info
+     * @return ET_Post
+     * @throws Exception
      */
-    public function post($debug = false)
+    public function post($upsert = true, $debug = false)
     {
         $originalProps = $this->props;
         if (property_exists($this, 'folderProperty') && !is_null($this->folderProperty) && !is_null($this->folderId)) {
@@ -90,7 +95,8 @@ class ET_CUDSupport extends ET_GetSupport
             ET_Util::printDebugInfo('ET_CUDSupport::post $this->obj');
             ET_Util::printDebugInfo($this->obj);
         }
-        $response = new ET_Post($this->authStub, $this->obj, $this->props, $debug);
+
+        $response = new ET_Post($this->authStub, $this->obj, $this->props, $upsert, $debug);
         $this->props = $originalProps;
         return $response;
     }
