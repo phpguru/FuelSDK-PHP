@@ -15,6 +15,7 @@ class ET_Configure extends ET_Constructor
      * @param    string $objType Object name, e.g. "ImportDefinition", "DataExtension", etc
      * @param    string $action Action names e.g. "create", "delete", "update", etc
      * @param    array $props Dictionary type array which may hold e.g. array('id' => '', 'key' => '')
+     * @throws \Exception
      */
     function __construct($authStub, $objType, $action, $props)
     {

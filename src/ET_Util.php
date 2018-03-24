@@ -314,7 +314,7 @@ class ET_Util
      */
     public static function printDebugInfo($message)
     {
-        if (PHP_SAPI == 'cli') {
+        if (php_sapi_name() == 'cli') {
             self::printDebugInfoToCli(self::convertArrayOrObjectToJson($message));
         } else {
             self::printDebugInfoToBrowser(self::convertArrayOrObjectToJson($message));

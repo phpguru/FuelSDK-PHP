@@ -237,7 +237,7 @@ class ET_Client extends SoapClient
             $soapOptions['proxy_password'] = $this->proxyPassword;
         }
 
-        parent::__construct($this->wsdlLoc . $this->xmlLoc, $soapOptions);
+        parent::__construct($this->xmlLoc, $soapOptions);
 
         parent::__setLocation($this->endpoint);
     }
@@ -283,7 +283,7 @@ class ET_Client extends SoapClient
                 $authObject = json_decode($authResponse->body);
 
                 if ($this->debugSOAP) {
-                    $this->outputDebugInfo("auth: \n" . json_encode($authResponse), $url);
+                    ET_Util::printDebugInfo("auth: \n" . json_encode($authResponse), $url);
                 }
 
                 if ($authResponse && property_exists($authObject, "accessToken")) {
@@ -846,21 +846,5 @@ class ET_Client extends SoapClient
         $postC->props = $arrayOfContentAreas;
         $sendResponse = $postC->post();
         return $sendResponse;
-    }
-
-    /**
-     * Print out debug info
-     *
-     * @param $message
-     * @param null $endpoint
-     */
-    public function outputDebugInfo($message, $endpoint = null)
-    {
-        echo "<pre>\n";
-        if (!empty($endpoint)) {
-            echo "endpoint: " . $endpoint . PHP_EOL;
-        }
-        print_r($message);
-        echo "</pre>\n";
     }
 }
