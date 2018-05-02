@@ -42,8 +42,9 @@ class ET_DataExtension_Row extends ET_CUDWithUpsertSupport
     /**
      * Post this instance.
      * @return ET_Post     Object of type ET_Post which contains http status code, response, etc from the POST SOAP service
+     * @throws Exception
      */
-    public function post()
+    public function post($upsert = false, $debug = false)
     {
         $this->getCustomerKey();
         $originalProps = $this->props;
@@ -60,7 +61,7 @@ class ET_DataExtension_Row extends ET_CUDWithUpsertSupport
         $overrideProps['Properties'] = ["Property" => $fields];
 
         $this->props = $overrideProps;
-        $response = parent::post();
+        $response = parent::post($upsert, $debug);
         $this->props = $originalProps;
         return $response;
     }

@@ -11,10 +11,12 @@ class ET_Post extends ET_Constructor
 {
     /**
      * Initializes a new instance of the class.
-     * @param    ET_Client $authStub The ET client object which performs the auth token, refresh token using clientID clientSecret
-     * @param    string $objType Object name, e.g. "ImportDefinition", "DataExtension", etc
-     * @param    array $props Dictionary type array which may hold e.g. array('id' => '', 'key' => '')
-     * @param    bool $upsert If true SaveAction is UpdateAdd, otherwise not. By default false.
+     * @param ET_Client $authStub The ET client object which performs the auth token, refresh token using clientID clientSecret
+     * @param string $objType Object name, e.g. "ImportDefinition", "DataExtension", etc
+     * @param array $props Dictionary type array which may hold e.g. array('id' => '', 'key' => '')
+     * @param bool $upsert If true SaveAction is UpdateAdd, otherwise not. By default false.
+     * @param  bool debug
+     * @throws \Exception
      */
     function __construct($authStub, $objType, $props, $upsert = false, $debug = false)
     {
