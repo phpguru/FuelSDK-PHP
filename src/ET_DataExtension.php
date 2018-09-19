@@ -24,7 +24,7 @@ class ET_DataExtension extends ET_CUDSupport
      * Post this instance.
      * @return ET_Post     Object of type ET_Post which contains http status code, response, etc from the POST SOAP service
      */
-    public function post()
+    public function post($upsert = false, $debug = false)
     {
         $originalProps = $this->props;
         if (ET_Util::isAssoc($this->props)) {
@@ -49,7 +49,7 @@ class ET_DataExtension extends ET_CUDSupport
             $this->props = $newProps;
         }
 
-        $response = parent::post();
+        $response = parent::post($upsert, $debug);
 
         $this->props = $originalProps;
         return $response;
