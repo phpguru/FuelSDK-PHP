@@ -102,15 +102,16 @@ class ET_CUDSupport extends ET_GetSupport
     }
 
     /**
+     * @param bool $upsert
      * @return ET_Patch     Object of type ET_Patch which contains http status code, response, etc from the PATCH SOAP service
      */
-    public function patch()
+    public function patch($upsert = false)
     {
         $originalProps = $this->props;
         if (property_exists($this, 'folderProperty') && !is_null($this->folderProperty) && !is_null($this->folderId)) {
             $this->props[$this->folderProperty] = $this->folderId;
         }
-        $response = new ET_Patch($this->authStub, $this->obj, $this->props);
+        $response = new ET_Patch($this->authStub, $this->obj, $this->props, $upsert);
         $this->props = $originalProps;
         return $response;
     }

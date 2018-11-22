@@ -68,9 +68,11 @@ class ET_DataExtension_Row extends ET_CUDWithUpsertSupport
 
     /**
      * Patch this instance.
+     * @param bool $upsert
      * @return ET_Patch     Object of type ET_Patch which contains http status code, response, etc from the PATCH SOAP service
+     * @throws Exception
      */
-    public function patch()
+    public function patch($upsert = false)
     {
         $this->getCustomerKey();
         $originalProps = $this->props;
@@ -87,7 +89,7 @@ class ET_DataExtension_Row extends ET_CUDWithUpsertSupport
         $overrideProps['Properties'] = ["Property" => $fields];
 
         $this->props = $overrideProps;
-        $response = parent::patch();
+        $response = parent::patch($upsert);
         $this->props = $originalProps;
         return $response;
     }
