@@ -165,7 +165,6 @@ class ET_DataExtension_Row extends ET_CUDWithUpsertSupport
                     'Value'          => $this->Name,
                 ];
                 $nameLookupGet = $nameLookup->get();
-                var_dump($nameLookupGet);
                 if ($nameLookupGet->status && count($nameLookupGet->results) == 1) {
                     $this->CustomerKey = $nameLookupGet->results[0]->CustomerKey;
                 } else {
