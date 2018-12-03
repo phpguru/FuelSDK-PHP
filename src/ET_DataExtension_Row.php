@@ -168,7 +168,9 @@ class ET_DataExtension_Row extends ET_CUDWithUpsertSupport
                 if ($nameLookupGet->status && count($nameLookupGet->results) == 1) {
                     $this->CustomerKey = $nameLookupGet->results[0]->CustomerKey;
                 } else {
-                    throw new Exception('Unable to process request due to unable to find DataExtension based on Name');
+                    throw new Exception(
+                        sprintf('Unable to process request due to unable to find DataExtension based on Name. Response contains: %s', print_r($nameLookupGet, true))
+                    );
                 }
             }
         }
