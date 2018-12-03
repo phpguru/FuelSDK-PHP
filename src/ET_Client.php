@@ -249,7 +249,7 @@ class ET_Client extends SoapClient
      * @return void
      * @throws Exception
      */
-    function refreshToken($forceRefresh = false)
+    function refreshToken($forceRefresh = true)
     {
 
         if (property_exists($this, "sdl") && $this->sdl == 0) {
