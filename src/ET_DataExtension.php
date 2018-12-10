@@ -57,9 +57,10 @@ class ET_DataExtension extends ET_CUDSupport
 
     /**
      * Patch this instance.
+     * @param bool $upsert
      * @return ET_Patch     Object of type ET_Patch which contains http status code, response, etc from the PATCH SOAP service
      */
-    public function patch()
+    public function patch($upsert = false)
     {
         $this->props["Fields"] = ["Field" => []];
         foreach ($this->columns as $column) {
